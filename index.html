@@ -1,0 +1,210 @@
+<html>
+  <style>
+    .wrapper {
+      display: flex;
+      justify-content: center;
+    }
+    .instructions {
+      display: flex;
+      flex-direction: column;
+    }
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(4, 20px);
+      margin: 20px;
+      border: black;
+      border-width: 2px;
+      border-style: solid;
+    }
+    .grid-container > div {
+      border: gray;
+      border-width: 0.5px;
+      border-style: solid;
+      height: 20px;
+      width: 20px;
+    }
+  </style>
+  <body>
+    <title>Simple game of life</title>
+    <div class="wrapper">
+      <div class="instructions">
+        <p>Grid size (row X cols):</p>
+        <input id="sizeInput" type="number" value="10" />
+        <button id="submitSize" type="submit">Submit</button>
+      </div>
+    </div>
+    <div class="wrapper" id="grid-wrapper">
+      <div class="grid-container">
+        <div>#</div>
+        <div>#</div>
+        <div>#</div>
+        <div>#</div>
+        <div>#</div>
+        <div>#</div>
+        <div>#</div>
+        <div>#</div>
+        <div>#</div>
+        <div>#</div>
+        <div>#</div>
+        <div>#</div>
+        <div>#</div>
+        <div>#</div>
+        <div>#</div>
+        <div>#</div>
+      </div>
+    </div>
+    <div class="wrapper">
+      <div class="controls">
+        <p id="stepLabel">Step: 0</p>
+        <button id="nextStep" type="button">Next</button>
+        <button id="evaluate" type="button">Evaluate</button>
+      </div>
+    </div>
+  </body>
+  <script>
+    const submit = document.getElementById("submitSize");
+    submit.addEventListener("click", handleSubmitClick);
+
+    function handleSubmitClick() {
+      const sizeInput = document.getElementById("sizeInput");
+      const gridSize = parseInt(sizeInput.value);
+
+      if (!gridSize || gridSize <= 0) return;
+
+      const grid = document.getElementsByClassName("grid-container")[0];
+      grid.innerHTML = null;
+
+      const array = [];
+      for (var i = 0; i < gridSize * gridSize; i++) {
+        const child = document.createElement("div");
+        cell = Math.random() < 0.5 ? "*" : " ";
+        child.innerHTML = cell;
+        grid.append(child);
+        array.push(cell);
+      }
+      grid.style.gridTemplateColumns = `repeat(${gridSize},20px)`;
+      console.log(array);
+    }
+
+    const next = document.getElementById("nextStep");
+    next.addEventListener("click", handleNextClick);
+
+    function handleNextClick() {
+      const gridSize = parseInt(sizeInput.value);
+      const grid = document.getElementsByClassName("grid-container")[0];
+
+      const newGrid = grid.cloneNode();
+
+      for (var i = 0; i < grid.children.length; i++) {
+        const isAlive = grid.children[i].innerHTML === "*";
+
+        const topIdx = i - gridSize;
+        const rightIdx = i + 1;
+        const bottomIdx = i + gridSize;
+        const leftIdx = i - 1;
+
+        var numberOfAliveNeighbours = 0;
+
+        if (topIdx >= 0) {
+          numberOfAliveNeighbours +=
+            grid.children[topIdx].innerHTML === "*" ? 1 : 0;
+        }
+
+        if (rightIdx % gridSize !== 0) {
+          numberOfAliveNeighbours +=
+            grid.children[rightIdx].innerHTML === "*" ? 1 : 0;
+        }
+
+        if (bottomIdx < grid.children.length) {
+          numberOfAliveNeighbours +=
+            grid.children[bottomIdx].innerHTML === "*" ? 1 : 0;
+        }
+
+        if ((leftIdx + gridSize) % gridSize !== gridSize - 1) {
+          numberOfAliveNeighbours +=
+            grid.children[leftIdx].innerHTML === "*" ? 1 : 0;
+        }
+
+        const newChild = document.createElement("div");
+        if (isAlive) {
+          if (numberOfAliveNeighbours < 2) {
+            // dies
+            newChild.innerHTML = " ";
+          } else if (numberOfAliveNeighbours < 4) {
+            // survives
+            newChild.innerHTML = "*";
+          } else {
+            // dies
+            newChild.innerHTML = " ";
+          }
+        } else if (numberOfAliveNeighbours === 3) {
+          // reborns
+          newChild.innerHTML = "*";
+        }
+        newGrid.append(newChild);
+      }
+      const gridWrapper = document.getElementById("grid-wrapper");
+      gridWrapper.innerHTML = null;
+      gridWrapper.append(newGrid);
+
+      const stepLabel = document.getElementById("stepLabel");
+      const currentStep = parseInt(stepLabel.innerText.split(":")[1].trim());
+      stepLabel.innerText = `Step: ${currentStep + 1}`;
+    }
+
+    const evaluate = document.getElementById("evaluate");
+    evaluate.addEventListener("click", handleEvaluateClick);
+
+    function handleEvaluateClick() {
+      const gridSize = parseInt(sizeInput.value);
+      const grid = document.getElementsByClassName("grid-container")[0];
+
+      for (var i = 0; i < grid.children.length; i++) {
+        const isAlive = grid.children[i].innerHTML === "*";
+
+        const topIdx = i - gridSize;
+        const rightIdx = i + 1;
+        const bottomIdx = i + gridSize;
+        const leftIdx = i - 1;
+
+        var numberOfAliveNeighbours = 0;
+
+        if (topIdx >= 0) {
+          numberOfAliveNeighbours +=
+            grid.children[topIdx].innerHTML === "*" ? 1 : 0;
+        }
+
+        if (rightIdx % gridSize !== 0) {
+          numberOfAliveNeighbours +=
+            grid.children[rightIdx].innerHTML === "*" ? 1 : 0;
+        }
+
+        if (bottomIdx < grid.children.length) {
+          numberOfAliveNeighbours +=
+            grid.children[bottomIdx].innerHTML === "*" ? 1 : 0;
+        }
+
+        if ((leftIdx + gridSize) % gridSize !== gridSize - 1) {
+          numberOfAliveNeighbours +=
+            grid.children[leftIdx].innerHTML === "*" ? 1 : 0;
+        }
+
+        if (isAlive) {
+          if (numberOfAliveNeighbours < 2) {
+            // dies
+            grid.children[i].style.backgroundColor = "orange";
+          } else if (numberOfAliveNeighbours < 4) {
+            // survives
+            grid.children[i].style.backgroundColor = "green";
+          } else {
+            // dies
+            grid.children[i].style.backgroundColor = "red";
+          }
+        } else if (numberOfAliveNeighbours === 3) {
+          // reborns
+          grid.children[i].style.backgroundColor = "purple";
+        }
+      }
+    }
+  </script>
+</html>
